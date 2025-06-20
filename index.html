@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Terms Analyzer</title>
+
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .chat-container {
+      width: 400px;
+      max-width: 100%;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-header {
+      background: #007bff;
+      color: white;
+      padding: 15px;
+      font-size: 18px;
+      text-align: center;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      border-bottom: 1px solid #ddd;
+    }
+    .message {
+      margin-bottom: 15px;
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      clear: both;
+    }
+    .message.user {
+      background: #007bff;
+      color: white;
+      float: right;
+      border-bottom-right-radius: 0;
+    }
+    .message.bot {
+      background: #e4e6eb;
+      color: #333;
+      float: left;
+      border-bottom-left-radius: 0;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    .chat-input input {
+      flex: 1;
+      border: none;
+      padding: 15px;
+      font-size: 16px;
+      outline: none;
+    }
+    .chat-input button {
+      background: #007bff;
+      border: none;
+      color: white;
+      padding: 0 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    .chat-input button:hover {
+      background: #0056b3;
+    }
+  </style>
+
+  <!-- <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 90%;
+      margin: auto;
+      padding: 20px;
+    }
+    /* Landing Page */
+    .landing-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .input-area, .upload-area, .link-area {
+      margin: 15px 0;
+    }
+    .checkboxes {
+      margin: 20px 0;
+    }
+    .checkboxes label {
+      margin-right: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      background-color: #0052cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Analysis Page */
+    .analysis-container {
+      display: flex;
+      margin-top: 30px;
+    }
+    .left-panel, .right-panel {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #ddd;
+      margin: 10px;
+      border-radius: 8px;
+      overflow-y: auto;
+    }
+    .clause-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .clause-item .flagged {
+      color: red;
+      font-weight: bold;
+    }
+    .clause-item button {
+      margin-top: 5px;
+      padding: 5px 10px;
+      color: #0052cc;
+      background: none;
+      border: 1px solid #0052cc;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Detail Page */
+    .detail-container {
+      display: flex;
+      margin-top: 30px;
+    }
+    .detail-left, .detail-right {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #ddd;
+      margin: 10px;
+      border-radius: 8px;
+      overflow-y: auto;
+    }
+  </style> -->
+</head>
+<body>
+  <div class="container" id="landing-page">
+    <div class="landing-box">
+      <h1>Understand Before You Agree</h1>
+      <div class="input-area">
+        <textarea rows="5" cols="50" placeholder="Paste your Terms & Conditions here"></textarea>
+      </div>
+      <div class="upload-area">
+        <button class="btn">Upload PDF/TXT</button>
+      </div>
+      <div class="link-area">
+        <input type="text" placeholder="Or enter a link" size="50">
+      </div>
+
+      <div class="checkboxes">
+        <label>
+          <input type="checkbox" id="sensitive-checkbox">
+          Sensitive (use local processing)
+        </label>
+        <label>
+          <input type="checkbox" id="detailed-checkbox">
+          I have some time (detailed analysis)
+        </label>
+      </div>
+
+      <button class="btn" id="analyze-btn">Analyze Terms</button>
+    </div>
+  </div>
+
+  <!-- The following containers would be dynamically shown after submission -->
+
+  <!-- Analysis Page -->
+  <div class="container" id="analysis-page" style="display:none;">
+    <div class="analysis-container">
+      <div class="left-panel">
+        <h2>Summary (Markdown)</h2>
+        <!-- The AI generated summary will be rendered here in Markdown -->
+        <div id="markdown-summary">
+          <p>Example summary content...</p>
+        </div>
+      </div>
+      <div class="right-panel">
+        <h2>Clause List</h2>
+        <!-- List of clauses with status -->
+        <div class="clause-item">
+          <p>Clause 1: This clause is OK.</p>
+        </div>
+        <div class="clause-item">
+          <p class="flagged">Clause 4: Data sharing with partners can pose risks.</p>
+          <button onclick="viewClauseDetail('Clause 4')">Learn More</button>
+        </div>
+        <!-- More clause items here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Page for a specific flagged clause -->
+  <div class="container" id="detail-page" style="display:none;">
+    <div class="detail-container">
+      <div class="detail-left">
+        <h2>Original Clause</h2>
+        <p id="original-clause">Original clause text here...</p>
+      </div>
+      <div class="detail-right">
+        <h2>Plain Language Explanation</h2>
+        <p id="plain-explanation">Explanation in simple language goes here...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample JavaScript to toggle pages (this will be replaced by your actual framework logic)
+    document.getElementById('analyze-btn').addEventListener('click', function() {
+      document.getElementById('landing-page').style.display = 'none';
+      document.getElementById('analysis-page').style.display = 'block';
+    });
+    function viewClauseDetail(clause) {
+      // In a real app, retrieve the clause and explanation info dynamically.
+      document.getElementById('analysis-page').style.display = 'none';
+      document.getElementById('detail-page').style.display = 'block';
+      document.getElementById('original-clause').textContent = clause + " (Original text here...)";
+      document.getElementById('plain-explanation').textContent = clause + " explained simply...";
+    }
+  </script>
+</body>
+</html>
